@@ -104,9 +104,34 @@
                 </div>
 
                 <!-- Generate Button -->
+                <div class="flex gap-2 mb-3">
+                    <button id="copy-btn" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-semibold transition"><i class="fa-solid fa-copy mr-1"></i> Copy</button>
+                    <button id="unlock-btn" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-semibold transition"><i class="fa-solid fa-lock-open mr-1"></i> Unlock all</button>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Lock a tower to keep it, then generate again to reroll the rest. Press Space to generate.</p>
                 <button id="generate-btn" class="w-full py-4 bg-gradient-to-r from-accent-600 to-blue-700 hover:from-accent-500 hover:to-blue-600 text-white font-bold rounded-lg shadow-lg transition-all transform hover:-translate-y-1 hover:shadow-neon focus:outline-none focus:ring-4 focus:ring-accent-500 focus:ring-opacity-50">
                     GENERATE LOADOUT
                 </button>
+            </div>
+
+            <!-- Presets -->
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+                <h2 class="text-lg font-bold mb-3 text-gray-200"><i class="fa-solid fa-floppy-disk mr-2 text-accent-400"></i>Saved presets</h2>
+                <div class="flex gap-2 mb-2">
+                    <input id="preset-name" maxlength="24" placeholder="Preset name" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-400">
+                    <button id="save-preset-btn" class="px-4 py-2 bg-accent-600 hover:bg-accent-500 rounded text-sm font-semibold transition">Save</button>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-gray-400 mb-3 cursor-pointer"><input type="checkbox" id="save-pool" class="accent-sky-500"> Also save my tower pool</label>
+                <div id="preset-list" class="flex flex-col gap-2"></div>
+            </div>
+
+            <!-- History -->
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-200"><i class="fa-solid fa-clock-rotate-left mr-2 text-accent-400"></i>Recent rolls</h2>
+                    <button id="clear-hist-btn" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition">Clear</button>
+                </div>
+                <div id="hist-list" class="flex flex-col gap-2"></div>
             </div>
 
             <!-- Global Controls -->
@@ -127,9 +152,10 @@
         <div class="lg:col-span-2">
             <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
                 <h2 class="text-2xl font-bold mb-6 flex items-center border-b border-gray-700 pb-4">
-                    <i class="fa-solid fa-list-check mr-3 text-accent-500"></i> Tower Pool
+                    <i class="fa-solid fa-list-check mr-3 text-accent-500"></i> Tower Pool <span id="pool-count" class="ml-auto text-sm font-normal text-gray-400"></span>
                 </h2>
                 
+                <input id="search" type="search" placeholder="Search towers..." class="w-full mb-6 bg-gray-900 border border-gray-600 rounded px-4 py-2 text-sm focus:outline-none focus:border-accent-400">
                 <div id="pool-container" class="space-y-8">
                     <!-- Categories will be injected here via JS -->
                 </div>
@@ -141,7 +167,7 @@
     <div id="error-toast" class="fixed bottom-4 right-4 bg-red-900 border-l-4 border-red-500 text-red-100 p-4 rounded shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center">
         <i class="fa-solid fa-triangle-exclamation text-2xl mr-3"></i>
         <div>
-            <h4 class="font-bold">Not Enough Towers</h4>
+            <h4 id="toast-title" class="font-bold">Not Enough Towers</h4>
             <p class="text-sm" id="error-msg">Please select at least 5 towers to generate a loadout.</p>
         </div>
     </div>
@@ -153,14 +179,14 @@
                 "Military base", "Rocketeer" ,"Pulse Trooper", "Crook Boss"
             ],
             "Advanced": ["Minigunner", "Ranger", "Commander", "DJ Booth", "Warden", "Turret", "Pursuit", "Mortar", "Cowboy"
-                , "Tesls" , "Saboteur" , "Mercenary Base", "Gatling"
+                , "Tesla" , "Saboteur" , "Mercenary Base", "Gatling"
             ],
             "Hardcore": ["Accelerator", "Engineer", "Brawler", "Necromancer","Hacker", "Time Dilator"],
             "Golden" : ["G-Minigunner", "G-CrookBoss", "G-Pyro", "G-Scout" ,"G-Demoman","G-Soldier"],
-            "Evole" : ["Operator", "Enforcer", "Kingpin", "Juggernaut", "Enforcer"],
+            "Evolved" : ["Operator", "Enforcer", "Kingpin", "Juggernaut"],
             "Event/Exclusive": ["Gladiator", "Commando", "Slasher", "Frost Blaster", "Archer", "Toxic Gunner",
              "Swarmer", "Sledger", "Executioner", "Elf Camp", "Jester", "Cryomancer",
-            "Hallow Punk" , "Harvester", "Snowballer", "Elemetalist" , "Firework Technician", "Biologist" , "Warlock", "Spotlight Technician", "Star Cannon"]
+            "Hallow Punk" , "Harvester", "Snowballer", "Elementalist" , "Firework Technician", "Biologist" , "Warlock", "Spotlight Technician", "Star Cannon"]
         };
 
         const categoryColors = {
@@ -169,7 +195,7 @@
             "Advanced": "text-red-400 border-red-500",
             "Hardcore": "text-purple-400 border-purple-500",
             "Golden" : "text-yellow-400 border-yellow-500",
-            "Evole" : "text-purple-400 border-purple-500",
+            "Evolved" : "text-purple-400 border-purple-500",
             "Event/Exclusive": "text-pink-400 border-pink-500"
         };
 
@@ -209,7 +235,7 @@
                 towers.forEach(tower => {
                     const towerId = `tower-${tower.replace(/\s+/g, '-').toLowerCase()}`;
                     const label = document.createElement('label');
-                    label.className = 'cursor-pointer relative block group';
+                    label.className = 'cursor-pointer relative block group'; label.dataset.name = tower.toLowerCase();
                     
                     label.innerHTML = `
                         <input type="checkbox" class="tower-checkbox hidden category-${category.replace(/\s+/g, '-')}" value="${tower}" checked>
@@ -234,79 +260,201 @@
             });
         }
 
-        selectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.tower-checkbox').forEach(cb => cb.checked = true);
-        });
+        const $ = id => document.getElementById(id);
+        const K = { presets: 'tds_presets', pool: 'tds_pool', hist: 'tds_hist' };
+        const rd = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
+        const wr = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+        const esc = t => t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const boxes = () => [...document.querySelectorAll('.tower-checkbox')];
+        const poolNames = () => [...new Set(boxes().filter(c => c.checked).map(c => c.value))];
+        const catOf = t => Object.keys(towerData).find(c => towerData[c].includes(t)) || 'Starter';
 
-        deselectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.tower-checkbox').forEach(cb => cb.checked = false);
-        });
+        let current = Array(5).fill(null);
+        let locked = Array(5).fill(false);
+        let presets = rd(K.presets, []);
+        let history = rd(K.hist, []);
 
-        function showError(message) {
-            document.getElementById('error-msg').innerText = message;
-            errorToast.classList.remove('translate-y-20', 'opacity-0');
-            
+        function toast(title, msg, ok) {
+            $('toast-title').innerText = title;
+            document.getElementById('error-msg').innerText = msg;
+            errorToast.className = errorToast.className
+                .replace(/bg-\w+-900 border-\w+-500 text-\w+-100/, ok ? 'bg-emerald-900 border-emerald-500 text-emerald-100' : 'bg-red-900 border-red-500 text-red-100')
+                .replace('translate-y-20 opacity-0', '');
             clearTimeout(errorTimeout);
-            errorTimeout = setTimeout(() => {
-                errorToast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            errorTimeout = setTimeout(() => errorToast.classList.add('translate-y-20', 'opacity-0'), 2500);
         }
 
-        function generateLoadout() {
-            const checkboxes = document.querySelectorAll('.tower-checkbox:checked');
-            const selectedTowers = Array.from(checkboxes).map(cb => cb.value);
-
-            if (selectedTowers.length < 5) {
-                showError(`Please select at least 5 towers. You currently have ${selectedTowers.length} selected.`);
-                return;
-            }
-
-            // Shuffle array (Fisher-Yates)
-            for (let i = selectedTowers.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [selectedTowers[i], selectedTowers[j]] = [selectedTowers[j], selectedTowers[i]];
-            }
-
-            const chosenTowers = selectedTowers.slice(0, 5);
-            displayLoadout(chosenTowers);
+        function onPool() {
+            const n = poolNames();
+            $('pool-count').innerText = `${n.length} selected`;
+            wr(K.pool, n);
+        }
+        function setPool(names) {
+            const set = new Set(names);
+            boxes().forEach(cb => cb.checked = set.has(cb.value));
+            onPool();
         }
 
-        function displayLoadout(towers) {
+        const _tc = toggleCategory;
+        toggleCategory = (c, st) => { _tc(c, st); onPool(); };
+        poolContainer.addEventListener('change', onPool);
+        selectAllBtn.addEventListener('click', () => { boxes().forEach(cb => cb.checked = true); onPool(); });
+        deselectAllBtn.addEventListener('click', () => { boxes().forEach(cb => cb.checked = false); onPool(); });
+
+        $('search').addEventListener('input', e => {
+            const q = e.target.value.trim().toLowerCase();
+            document.querySelectorAll('.category-section').forEach(sec => {
+                let any = false;
+                sec.querySelectorAll('label').forEach(l => {
+                    const show = l.dataset.name.includes(q);
+                    l.style.display = show ? '' : 'none';
+                    any = any || show;
+                });
+                sec.style.display = any ? '' : 'none';
+            });
+        });
+
+        function render(changed = []) {
             loadoutContainer.innerHTML = '';
-            
-            towers.forEach((tower, index) => {
-                // Find category to match color roughly
-                let matchedCategory = "Starter";
-                for (const [cat, list] of Object.entries(towerData)) {
-                    if (list.includes(tower)) {
-                        matchedCategory = cat;
-                        break;
-                    }
-                }
-                
-                const borderColor = categoryColors[matchedCategory] ? categoryColors[matchedCategory].split(' ')[1] : 'border-accent-500';
-
+            current.forEach((t, i) => {
                 const slot = document.createElement('div');
-                // Apply animation and distinct styling
-                slot.className = `card-enter bg-gray-800 border-l-4 ${borderColor} rounded-r-lg p-4 flex items-center shadow-md border-y border-r border-y-gray-700 border-r-gray-700`;
-                slot.style.animationDelay = `${index * 0.1}s`;
-                
-                slot.innerHTML = `
-                    <div class="bg-gray-900 h-10 w-10 rounded flex items-center justify-center mr-4 border border-gray-700">
-                        <i class="fa-solid fa-tower-observation text-gray-400"></i>
-                    </div>
-                    <span class="font-bold text-lg text-white">${tower}</span>
-                `;
-                
+                if (!t) {
+                    slot.className = 'bg-gray-900 border border-gray-700 rounded-lg p-4 flex items-center justify-center h-16 text-gray-500 italic';
+                    slot.innerText = `Slot ${i + 1}`;
+                } else {
+                    const border = categoryColors[catOf(t)].split(' ')[1];
+                    const anim = changed.includes(i);
+                    slot.className = `${anim ? 'card-enter' : ''} bg-gray-800 border-l-4 ${border} rounded-r-lg p-4 flex items-center shadow-md border-y border-r border-y-gray-700 border-r-gray-700 ${locked[i] ? 'ring-1 ring-yellow-400' : ''}`;
+                    slot.style.animationDelay = `${changed.indexOf(i) * 0.1}s`;
+                    slot.innerHTML = `
+                        <div class="bg-gray-900 h-10 w-10 rounded flex items-center justify-center mr-4 border border-gray-700">
+                            <i class="fa-solid fa-tower-observation text-gray-400"></i>
+                        </div>
+                        <span class="font-bold text-lg text-white flex-1">${esc(t)}</span>
+                        <button data-lock="${i}" title="${locked[i] ? 'Unlock' : 'Lock'} this tower" class="h-10 w-10 rounded hover:bg-gray-700 transition">
+                            <i class="fa-solid ${locked[i] ? 'fa-lock text-yellow-400' : 'fa-lock-open text-gray-500'}"></i>
+                        </button>`;
+                }
                 loadoutContainer.appendChild(slot);
             });
         }
 
-        generateBtn.addEventListener('click', generateLoadout);
+        loadoutContainer.addEventListener('click', e => {
+            const b = e.target.closest('[data-lock]');
+            if (!b) return;
+            const i = +b.dataset.lock;
+            locked[i] = !locked[i];
+            render();
+        });
+        $('unlock-btn').addEventListener('click', () => { locked.fill(false); render(); });
+
+        function generate() {
+            const free = [];
+            current.forEach((t, i) => { if (!t || !locked[i]) free.push(i); });
+            const kept = current.filter((t, i) => t && locked[i]);
+            const pool = poolNames().filter(t => !kept.includes(t));
+            if (pool.length < free.length) {
+                toast('Not Enough Towers', `You need ${free.length} more tower${free.length > 1 ? 's' : ''} in the pool but only ${pool.length} selected.`);
+                return;
+            }
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            free.forEach((slot, k) => current[slot] = pool[k]);
+            render(free);
+            history = [current.slice(), ...history.filter(h => h.join() !== current.join())].slice(0, 8);
+            wr(K.hist, history);
+            renderHistory();
+        }
+
+        $('copy-btn').addEventListener('click', async () => {
+            if (current.some(t => !t)) return toast('Nothing to copy', 'Generate a loadout first.');
+            try { await navigator.clipboard.writeText(current.join(', ')); toast('Copied', current.join(', '), true); }
+            catch (e) { toast('Copy failed', 'Your browser blocked clipboard access.'); }
+        });
+
+        function renderHistory() {
+            const el = $('hist-list');
+            el.innerHTML = history.length ? '' : '<p class="text-sm text-gray-500">Your last 8 rolls show up here.</p>';
+            history.forEach((h, i) => {
+                const b = document.createElement('button');
+                b.dataset.hist = i;
+                b.className = 'text-left text-xs text-gray-300 bg-gray-900 hover:bg-gray-700 border border-gray-700 rounded px-3 py-2 transition';
+                b.innerText = h.join(', ');
+                el.appendChild(b);
+            });
+        }
+        $('hist-list').addEventListener('click', e => {
+            const b = e.target.closest('[data-hist]');
+            if (!b) return;
+            current = history[+b.dataset.hist].slice();
+            locked.fill(false);
+            render([0, 1, 2, 3, 4]);
+        });
+        $('clear-hist-btn').addEventListener('click', () => { history = []; wr(K.hist, history); renderHistory(); });
+
+        function renderPresets() {
+            const el = $('preset-list');
+            el.innerHTML = presets.length ? '' : '<p class="text-sm text-gray-500">Generate a loadout, name it, and save it here.</p>';
+            presets.forEach((p, i) => {
+                const row = document.createElement('div');
+                row.className = 'bg-gray-900 border border-gray-700 rounded p-3';
+                row.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-semibold text-sm truncate">${esc(p.name)}${p.pool ? ' <i class="fa-solid fa-list-check text-accent-400 text-xs" title="Includes pool"></i>' : ''}</span>
+                        <div class="flex gap-1 shrink-0">
+                            <button data-load="${i}" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Load</button>
+                            <button data-del="${i}" class="text-xs bg-gray-700 hover:bg-red-700 px-3 py-1 rounded" title="Delete preset"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">${esc(p.towers.join(', '))}</p>`;
+                el.appendChild(row);
+            });
+        }
+        $('save-preset-btn').addEventListener('click', () => {
+            if (current.some(t => !t)) return toast('No loadout yet', 'Generate a loadout before saving a preset.');
+            const input = $('preset-name');
+            const name = input.value.trim() || `Loadout ${presets.length + 1}`;
+            const p = { name, towers: current.slice() };
+            if ($('save-pool').checked) p.pool = poolNames();
+            const existing = presets.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
+            if (existing >= 0) presets[existing] = p; else presets.unshift(p);
+            wr(K.presets, presets);
+            input.value = '';
+            renderPresets();
+            toast('Saved', `"${name}" saved.`, true);
+        });
+        $('preset-list').addEventListener('click', e => {
+            const l = e.target.closest('[data-load]'), d = e.target.closest('[data-del]');
+            if (l) {
+                const p = presets[+l.dataset.load];
+                current = p.towers.slice();
+                locked.fill(false);
+                if (p.pool) setPool(p.pool);
+                render([0, 1, 2, 3, 4]);
+                toast('Loaded', `"${p.name}" loaded.`, true);
+            } else if (d) {
+                presets.splice(+d.dataset.del, 1);
+                wr(K.presets, presets);
+                renderPresets();
+            }
+        });
+
+        generateBtn.addEventListener('click', generate);
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) {
+                e.preventDefault();
+                generate();
+            }
+        });
 
         // Initialize App
         initPool();
-
+        const savedPool = rd(K.pool, null);
+        if (Array.isArray(savedPool) && savedPool.length) setPool(savedPool); else onPool();
+        renderPresets();
+        renderHistory();
     </script>
 </body>
 </html>
